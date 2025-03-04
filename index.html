@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday</title>
+    <style>
+        /* General Body Styling */
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: white;
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* Birthday Text Styling */
+        .birthday-text {
+            font-size: 4rem;
+            font-weight: bold;
+            color: black;
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 2px solid black;
+            display: inline-block;
+            visibility: hidden;
+        }
+
+        /* Gift Box Styling */
+        #gift-box {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #f9dcb3, #f6b5c0); /* Soft gradient */
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            line-height: 200px;
+            color: #6d4f4b;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Soft shadow */
+            cursor: pointer;
+            visibility: visible;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Box Hover Effect */
+        #gift-box:hover {
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+            transform: translateX(-50%) scale(1.05); /* Slight zoom effect */
+            background: linear-gradient(45deg, #f6b5c0, #f9dcb3); /* Reverse gradient on hover */
+        }
+
+        /* Text inside the box */
+        #gift-box {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Box when opened */
+        #gift-box.opened {
+            height: 0;
+            width: 0;
+            line-height: 0;
+            opacity: 0;
+            background: transparent;
+        }
+
+        /* Heart Image Styling */
+        .heart {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            background-image: url('heart.png'); /* Heart image */
+            background-size: cover;
+            visibility: hidden;
+        }
+
+        /* Confetti and Canvas Styling */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        /* Audio Control Styling */
+        #audio-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border: none;
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* Photo Gallery Styling */
+        #photo-gallery {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .photo-item {
+            width: 200px;
+            height: 150px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease-in-out;
+            position: relative;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05);
+        }
+
+        /* Photo Item Animation */
+        .photo-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.2));
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .photo-item:hover::before {
+            opacity: 1;
+        }
+    </style>
+
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <audio id="bg-music" loop>
+        <source src="Mwenje Mathole – Zvaunondiitira Madhlauzani.mp3" type="audio/mpeg">
+    </audio>
+    <div class="birthday-text" id="text"></div>
+    <canvas id="confetti"></canvas>
+    <div id="gift-box">Click Me 😀</div>
+    <div class="heart" id="heart1"></div>
+    <div class="heart" id="heart2"></div>
+    <div class="heart" id="heart3"></div>
+    <div class="heart" id="heart4"></div>
+    <div class="heart" id="heart5"></div>
+    <button id="audio-controls">Pause</button>
+
+    <div id="photo-gallery">
+        <div class="photo-item"><img src="assets/1.jpeg" alt="Photo 1"></div>
+        <div class="photo-item"><img src="assets/2.jpeg" alt="Photo 2"></div>
+        <div class="photo-item"><img src="assets/3.jpeg" alt="Photo 3"></div>
+        <div class="photo-item"><img src="assets/4.jpeg" alt="Photo 4"></div>
+        <div class="photo-item"><img src="assets/5.jpeg" alt="Photo 5"></div>
+        <div class="photo-item"><img src="assets/6.jpeg" alt="Photo 6"></div>
+    </div>
+    <script>
+        const audio = document.getElementById("bg-music");
+        const canvas = document.getElementById("confetti");
+        const ctx = canvas.getContext("2d");
+        const textElement = document.getElementById("text");
+        const giftBox = document.getElementById("gift-box");
+        const audioControls = document.getElementById("audio-controls");
+        const photoGallery = document.getElementById('photo-gallery');
+
+        const hearts = [document.getElementById('heart1'), document.getElementById('heart2'), document.getElementById('heart3'), document.getElementById('heart4'), document.getElementById('heart5')];
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const confetti = [];
+        const letters = [];
+        const mouse = { x: 0, y: 0 };
+
+        class ConfettiPiece {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * -canvas.height;
+                this.size = Math.random() * 10 + 5;
+                this.speedY = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 1.5;
+                this.angle = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 4 - 2;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.angle += this.rotationSpeed;
+                if (this.y > canvas.height) {
+                    this.y = Math.random() * -canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle * Math.PI / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        class FallingLetter {
+            constructor(letter, index, totalLetters) {
+                this.letter = letter;
+                this.size = 26;
+                this.y = Math.random() * -canvas.height;
+                this.speedY = Math.random() * 2 + 1;
+                this.landingY = canvas.height - 60;
+                const totalWidth = totalLetters * this.size;
+                const spacing = (canvas.width - totalWidth) / 2;
+                this.x = spacing + index * (this.size + 5);
+            }
+            update() {
+                if (this.y < this.landingY) {
+                    this.y += this.speedY;
+                }
+            }
+            draw() {
+                ctx.font = `${this.size}px Montserrat, sans-serif`;
+                ctx.fillStyle = 'black';
+                ctx.fillText(this.letter, this.x, this.y);
+            }
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 200; i++) {
+                confetti.push(new ConfettiPiece());
+            }
+        }
+
+        function createLetters() {
+            const text = "CHARMAINEROSE";
+            for (let i = 0; i < text.length; i++) {
+                letters.push(new FallingLetter(text[i], i, text.length));
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confetti.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            letters.forEach(letter => {
+                letter.update();
+                letter.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener("mousemove", (event) => {
+            mouse.x = event.clientX;
+            mouse.y = event.clientY;
+        });
+
+        const textContent = "Happy Birthday!";
+        let index = 0;
+
+        function writeText() {
+            if (index < textContent.length) {
+                textElement.innerHTML += textContent[index];
+                index++;
+                setTimeout(writeText, 200);
+            }
+        }
+
+        function startAnimation() {
+            audio.play();
+            textElement.style.visibility = "visible";
+            canvas.style.visibility = "visible";
+            createConfetti();
+            createLetters();
+            animate();
+            writeText();
+
+            // Show the photo gallery after a delay
+            setTimeout(() => {
+                photoGallery.style.display = 'flex';
+            }, 5000); // Adjust the delay as needed
+        }
+
+        function openGiftBox() {
+            giftBox.classList.add("opened");
+            setTimeout(() => {
+                giftBox.style.visibility = "hidden";
+                startAnimation();
+            }, 2000);
+        }
+
+        giftBox.addEventListener("click", openGiftBox);
+
+        audioControls.addEventListener("click", () => {
+            if (audio.paused) {
+                audio.play();
+                audioControls.innerText = "Pause";
+            } else {
+                audio.pause();
+                audioControls.innerText = "Play";
+            }
+        });
+    </script>
+</body>
+</html>
